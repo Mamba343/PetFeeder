@@ -1,9 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useEffect, useRef, useState } from 'react';
 import type { DimensionValue } from 'react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppScreen } from '@/components/app-screen';
-import { mockFeederStatus, mockHistory, mockSchedules } from '@/data/mock-data';
+import { mockFeederStatus, mockSchedules, mockSettings } from '@/data/mock-data';
+
+const portions = [25, 40, 55, 70];
 
 type MetricCardProps = {
   accent: string;
@@ -37,8 +40,30 @@ function MetricCard({ accent, icon, label, meta, value }: MetricCardProps) {
 
 export default function DashboardScreen() {
   const nextFeed = mockSchedules.find((schedule) => schedule.enabled);
-  const latestFeed = mockHistory[0];
+  const [selectedPortion, setSelectedPortion] = useState(mockSettings.portionSizeGrams);
+  const [sentPortion, setSentPortion] = useState<number | null>(null);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressWidth: DimensionValue = `${mockFeederStatus.foodLevel}%`;
+
+  useEffect(() => {
+    return () => {
+      if (resetTimer.current) {
+        clearTimeout(resetTimer.current);
+      }
+    };
+  }, []);
+
+  function dispenseFood() {
+    if (resetTimer.current) {
+      clearTimeout(resetTimer.current);
+    }
+
+    setSentPortion(selectedPortion);
+    resetTimer.current = setTimeout(() => {
+      setSentPortion(null);
+      resetTimer.current = null;
+    }, 4000);
+  }
 
   return (
     <AppScreen
@@ -104,57 +129,52 @@ export default function DashboardScreen() {
         <Text style={styles.panelMeta}>{nextFeed?.days.join(', ') ?? 'Create a feeding plan'}</Text>
       </View>
 
-      <View style={styles.panel}>
-        <View style={styles.panelHeader}>
-          <Text style={styles.panelTitle}>Recent Activity</Text>
-          <MaterialCommunityIcons name="history" size={22} color="#f8c471" />
-        </View>
-        <View style={styles.activityRow}>
-          <View style={styles.activityIcon}>
-            <MaterialCommunityIcons name="check" size={20} color="#07100f" />
+      {sentPortion ? (
+        <View style={[styles.panel, styles.sentPanel]}>
+          <View style={styles.sentIcon}>
+            <MaterialCommunityIcons name="check" size={28} color="#07100f" />
           </View>
-          <View style={styles.activityCopy}>
-            <Text style={styles.activityTitle}>
-              {latestFeed.portionGrams}g served to {latestFeed.petName}
-            </Text>
-            <Text style={styles.activityMeta}>
-              {latestFeed.date} at {latestFeed.time} - {latestFeed.source}
-            </Text>
-          </View>
+          <Text style={styles.sentTitle}>Feed sent</Text>
+          <Text style={styles.sentMeta}>
+            {sentPortion}g dispense action queued for {mockFeederStatus.petName}.
+          </Text>
         </View>
-      </View>
+      ) : (
+        <View style={styles.panel}>
+          <View style={styles.panelHeader}>
+            <Text style={styles.panelTitle}>Dispense Food</Text>
+            <MaterialCommunityIcons name="bowl-mix-outline" size={22} color="#89f7d2" />
+          </View>
+
+          <View style={styles.portionGrid}>
+            {portions.map((portion) => {
+              const selected = selectedPortion === portion;
+
+              return (
+                <Pressable
+                  accessibilityRole="button"
+                  key={portion}
+                  onPress={() => setSelectedPortion(portion)}
+                  style={[styles.portionButton, selected && styles.portionButtonSelected]}>
+                  <Text style={[styles.portionText, selected && styles.portionTextSelected]}>
+                    {portion}g
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Pressable accessibilityRole="button" onPress={dispenseFood} style={styles.dispenseButton}>
+            <MaterialCommunityIcons name="send" size={20} color="#07100f" />
+            <Text style={styles.dispenseButtonText}>Dispense Now</Text>
+          </Pressable>
+        </View>
+      )}
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  activityCopy: {
-    flex: 1,
-    gap: 3,
-  },
-  activityIcon: {
-    alignItems: 'center',
-    backgroundColor: '#89f7d2',
-    borderRadius: 8,
-    height: 36,
-    justifyContent: 'center',
-    width: 36,
-  },
-  activityMeta: {
-    color: '#839893',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  activityRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-  },
-  activityTitle: {
-    color: '#f4fbf9',
-    fontSize: 16,
-    fontWeight: '800',
-  },
   bowlGauge: {
     alignItems: 'center',
     aspectRatio: 1,
@@ -211,6 +231,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase',
+  },
+  dispenseButton: {
+    alignItems: 'center',
+    backgroundColor: '#89f7d2',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 9,
+    justifyContent: 'center',
+    minHeight: 52,
+    paddingHorizontal: 16,
+  },
+  dispenseButtonText: {
+    color: '#07100f',
+    fontSize: 16,
+    fontWeight: '900',
   },
   feedChip: {
     backgroundColor: '#1c302c',
@@ -308,6 +343,32 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     height: '100%',
   },
+  portionButton: {
+    alignItems: 'center',
+    backgroundColor: '#132522',
+    borderColor: '#294640',
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 50,
+  },
+  portionButtonSelected: {
+    backgroundColor: '#1f3c36',
+    borderColor: '#89f7d2',
+  },
+  portionGrid: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  portionText: {
+    color: '#9caeaa',
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  portionTextSelected: {
+    color: '#89f7d2',
+  },
   progressTrack: {
     backgroundColor: '#172a27',
     borderRadius: 8,
@@ -319,6 +380,33 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '900',
     letterSpacing: 0,
+  },
+  sentIcon: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: '#89f7d2',
+    borderRadius: 8,
+    height: 54,
+    justifyContent: 'center',
+    width: 54,
+  },
+  sentMeta: {
+    color: '#a5b8b3',
+    fontSize: 15,
+    lineHeight: 21,
+    textAlign: 'center',
+  },
+  sentPanel: {
+    alignItems: 'center',
+    borderColor: '#3d6f63',
+    minHeight: 176,
+  },
+  sentTitle: {
+    color: '#f4fbf9',
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: 0,
+    textAlign: 'center',
   },
   statusDot: {
     borderRadius: 5,

@@ -70,6 +70,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabIcon color={color} name="cog-outline" />,
         }}
       />
+      <Tabs.Screen
+        name="message"
+        options={{
+          title: 'Message',
+          tabBarIcon: ({ color }) => <TabIcon color={color} name="message-text-outline" />,
+        }}
+      />
     </Tabs>
   );
 }
