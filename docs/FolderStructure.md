@@ -4,11 +4,12 @@
 
 - `.git/` - Git metadata.
 - `.gitattributes` - Line-ending normalization.
+- `.gitignore` - Ignored files (should include `secrets.h`).
 - `README.md` - Repository overview.
 - `AGENTS.md` - AI agent handoff guide.
 - `docs/` - Architecture, setup, status, API, database, hardware, and maintenance docs.
-- `PetFeeder.ino` - ESP32 firmware sketch using one WiFi SSID.
-- `PetFeeder (1).ino` - ESP32 firmware sketch variant using a different WiFi SSID.
+- `PetFeeder.ino` - ESP32 firmware sketch.
+- `secrets.h` - WiFi and Firebase credentials (NOT committed, gitignored).
 - `Printing Files/` - 3D printing assets.
 - `ali.txt`, `kjahdskahs.txt` - Unclassified root text files with no apparent app or firmware role.
 
@@ -24,6 +25,7 @@
 - `constants/` - Theme constants.
 - `data/` - Central mock data used by app screens.
 - `hooks/` - Theme and color-scheme hooks.
+- `lib/` - Firebase SDK and utility functions (planned).
 - `scripts/` - Expo starter reset script.
 - `package.json` - App scripts and dependencies.
 - `package-lock.json` - Locked npm dependency graph.
@@ -46,3 +48,36 @@
 - `components/info-card.tsx` - Shared info/status card.
 - `components/haptic-tab.tsx` - iOS tab press haptic wrapper.
 
+## Planned Files (Phase 2)
+
+- `petfeeder/lib/firebase.ts` - Firebase SDK initialization and utility functions.
+- `secrets.h` - Firmware credentials (root directory, gitignored).
+
+## Firmware Files
+
+- `PetFeeder.ino` - Main ESP32 firmware sketch.
+- `secrets.h` - WiFi and Firebase credentials (NOT committed).
+
+### Firmware File Structure
+
+```
+PetFeeder.ino
+  #include "secrets.h"     // credentials (gitignored)
+  #include <WiFi.h>
+  #include <Firebase_ESP_Client.h>
+  #include <ESP32Servo.h>
+  #include "time.h"
+  
+  // State machine
+  enum FeederState { IDLE, FEEDING, DONE };
+  
+  // Functions
+  void setup()           // WiFi, Firebase, servo, LED
+  void loop()            // Firebase.ready(), check command, updateFeeder()
+  void startFeeding()    // Begin feed cycle
+  void updateFeeder()    // Non-blocking state machine
+  void streamCallback()  // Firebase stream handler
+  void setLedGreen()     // LED state functions
+  void setLedYellow()
+  void setLedRed()
+```

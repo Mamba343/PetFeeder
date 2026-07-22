@@ -12,8 +12,9 @@ For firmware:
 - Arduino IDE or compatible ESP32 build environment.
 - ESP32 board support.
 - Libraries: `Firebase_ESP_Client`, `ESP32Servo`.
-- A servo connected to the configured pin.
-- WiFi credentials and Firebase credentials supplied outside source control.
+- A servo connected to GPIO 13.
+- An LED connected to GPIO 2 (through 330 ohm resistor).
+- WiFi credentials and Firebase credentials in `secrets.h`.
 
 ## Mobile App
 
@@ -71,21 +72,71 @@ Development dependencies include TypeScript and ESLint with Expo's ESLint config
 
 Firmware dependencies include ESP32 WiFi support, `Firebase_ESP_Client`, `ESP32Servo`, and the Arduino `time.h` NTP APIs.
 
-## Firmware
+## Firmware Setup
 
-The firmware sketches are at the repository root:
+### 1. Create secrets.h
 
-- `PetFeeder.ino`
-- `PetFeeder (1).ino`
+Create a file called `secrets.h` in the same directory as `PetFeeder.ino`:
 
-Both sketches contain hard-coded credentials today. Before flashing a real device, move credentials to a local-only configuration mechanism and rotate any values that were committed.
+```cpp
+// secrets.h - DO NOT COMMIT TO GIT
+#ifndef SECRETS_H
+#define SECRETS_H
 
-The current firmware expects:
+// WiFi credentials
+#define WIFI_SSID "YourWiFiName"
+#define WIFI_PASSWORD "YourWiFiPassword"
 
-- ESP32 WiFi support.
-- Firebase Realtime Database credentials.
-- Servo attached to GPIO 13.
-- NTP access to `pool.ntp.org`.
+// Firebase credentials
+#define API_KEY "YourFirebaseAPIKey"
+#define DATABASE_URL "https://your-project.firebaseio.com/"
+#define USER_EMAIL "device@feeder.com"
+#define USER_PASSWORD "device_password"
+
+#endif
+```
+
+### 2. Add secrets.h to .gitignore
+
+Add this line to the root `.gitignore`:
+
+```
+secrets.h
+```
+
+### 3. Install Arduino Libraries
+
+In Arduino IDE, go to Sketch > Include Library > Manage Libraries:
+
+- Search for `Firebase ESP Client` and install
+- Search for `ESP32Servo` and install
+
+### 4. Wire the Hardware
+
+See [Hardware](Hardware.md) for the full wiring diagram.
+
+Basic wiring:
+
+- Servo signal (orange) → GPIO 13
+- Servo VCC (red) → 5V
+- Servo GND (brown) → GND
+- LED anode (+) → 330Ω resistor → GPIO 2
+- LED cathode (-) → GND
+
+### 5. Flash the Firmware
+
+1. Open `PetFeeder.ino` in Arduino IDE
+2. Select board: Tools > Board > ESP32 Arduino > AI Thinker ESP32
+3. Select port: Tools > Port
+4. Click Upload
+
+### 6. Test
+
+1. Open Serial Monitor at 115200 baud
+2. Verify WiFi connection
+3. Verify Firebase streaming connection
+4. Write `portion_size = 2` from Firebase console
+5. Verify servo rotates and LED changes color
 
 ## Build and Deployment
 

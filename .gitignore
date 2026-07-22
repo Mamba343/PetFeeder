@@ -1,0 +1,5 @@
+# Secrets - DO NOT COMMIT
+firmware/Secrets.h
+
+# Development artifacts
+expo-dev.log
