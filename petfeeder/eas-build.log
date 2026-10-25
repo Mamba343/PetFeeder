@@ -1,0 +1,20 @@
+
+⚠️ Detected that your app uses Expo Go for development, this is not recommended when building production apps.
+Learn more: https://expo.fyi/why-not-build-expo-go-for-production
+To suppress this warning, set EAS_BUILD_NO_EXPO_GO_WARNING=true.
+
+Resolved "production" environment for the build. Learn more: https://docs.expo.dev/eas/environment-variables/#setting-the-environment-for-your-builds
+No environment variables with visibility "Plain text" and "Sensitive" found for the "production" environment on EAS.
+
+- Incrementing versionCode from 12 to 13.
+✔ Incremented versionCode from 12 to 13.
+
+
+✔ Using remote Android credentials (Expo server)
+✔ Using Keystore from configuration: Build Credentials _6KdgwHIR5 (default)
+
+Compressing project files and uploading to EAS Build. Learn more: https://expo.fyi/eas-build-archive
+Failed to upload the project tarball to EAS Build
+
+Reason: git clone --no-checkout --no-hardlinks --depth 1 file:///C:/EAS/petfeeder C:\Users\Ali\AppData\Local\Temp\eas-cli-nodejs\b95336de-a9e7-453c-97a5-d27f59122314-shallow-clone exited with non-zero code: 128
+    Error: build command failed.
